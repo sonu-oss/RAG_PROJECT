@@ -16,6 +16,9 @@ env/
 # Secrets
 .env
 
+# Files uploaded through the API/UI
+data/uploads/
+
 # Search index (Chroma data + chunks.json)
 .index/
 chroma/

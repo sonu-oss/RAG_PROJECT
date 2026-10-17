@@ -4,10 +4,12 @@
     python cli.py search "how do I rotate an API key?"
     python cli.py search "ERR-4012" --mode bm25 -k 3
     python cli.py compare "what happens if a payment fails"
+    python cli.py ask "how long do refunds take?"      # needs Ollama running
 """
 
 import argparse
 import json
+import sys
 import textwrap
 
 from rag import HybridSearcher
@@ -43,6 +45,11 @@ def main():
     pc.add_argument("query")
     pc.add_argument("-k", type=int, default=3)
 
+    pa = sub.add_parser("ask", help="answer a question with citations (local LLM via Ollama)")
+    pa.add_argument("query")
+    pa.add_argument("-k", type=int, default=5)
+    pa.add_argument("--mode", choices=["hybrid", "bm25", "vector"], default="hybrid")
+
     sub.add_parser("stats", help="show index stats")
 
     args = p.parse_args()
@@ -61,6 +68,19 @@ def main():
         for mode in ("bm25", "vector", "hybrid"):
             print(f"\n=== {mode} ===")
             _print_results(hs.search(args.query, k=args.k, mode=mode), show_ranks=mode == "hybrid")
+    elif args.cmd == "ask":
+        from rag.answer import Answerer
+        from rag.llm import LLMError, get_llm
+
+        try:
+            ans = Answerer(hs, get_llm()).ask(args.query, k=args.k, mode=args.mode)
+        except LLMError as e:
+            sys.exit(f"Error: {e}")
+        print(ans.answer + "\n")
+        for c in ans.citations:
+            r = c.result
+            loc = r.chunk.source + (f" p.{r.chunk.page}" if r.chunk.page else "")
+            print(f"[{c.number}] {loc}  [bm25 #{r.bm25_rank or '-'} | vector #{r.vector_rank or '-'}]")
     elif args.cmd == "stats":
         print(json.dumps(hs.stats(), indent=2))
 
