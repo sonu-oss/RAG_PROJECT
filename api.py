@@ -81,8 +81,20 @@ def ingest_upload(
     added = 0
     with _ingest_lock:
         for name in saved:
-            added += hs.ingest(UPLOAD_DIR / name)
+            try:
+                added += hs.ingest(UPLOAD_DIR / name)
+            except Exception as e:  # surface the reason in the UI instead of a bare 500
+                raise HTTPException(500, f"Couldn't index {name}: {type(e).__name__}: {e}") from e
     return {"added": added, "saved": saved, "skipped": skipped, **hs.stats()}
+
+
+@app.get("/sources")
+def sources(hs: HybridSearcher = Depends(get_searcher)):
+    """Every indexed file with its number of chunks."""
+    counts: dict[str, int] = {}
+    for c in hs.chunks.values():
+        counts[c.source] = counts.get(c.source, 0) + 1
+    return {"sources": [{"source": k, "chunks": v} for k, v in sorted(counts.items())]}
 
 
 @app.post("/search")

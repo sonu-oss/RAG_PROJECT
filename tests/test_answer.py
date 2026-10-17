@@ -150,3 +150,20 @@ def test_api_llm_down_returns_503(client):
     api.app.dependency_overrides[api.get_model] = lambda: DownLLM()
     r = client.post("/ask", json={"query": "refunds"})
     assert r.status_code == 503 and "Ollama" in r.json()["detail"]
+
+
+def test_api_sources_lists_files(client):
+    client.post("/ingest", json={"path": str(SAMPLE)})
+    client.post("/ingest/upload", files=[("files", ("prd.md", b"# PRD\nMust support SSO."))])
+    names = [s["source"] for s in client.get("/sources").json()["sources"]]
+    assert "prd.md" in names and "refunds.md" in names
+
+
+def test_api_upload_index_error_is_readable(client, monkeypatch):
+    def boom(*a, **kw):
+        raise ValueError("bad file")
+
+    hs = api.app.dependency_overrides[api.get_searcher]()
+    monkeypatch.setattr(hs, "ingest", boom)
+    r = client.post("/ingest/upload", files=[("files", ("x.md", b"hello"))])
+    assert r.status_code == 500 and "x.md" in r.json()["detail"] and "bad file" in r.json()["detail"]

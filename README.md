@@ -43,13 +43,15 @@ streamlit run ui.py           # terminal 2: UI on http://localhost:8501
 The UI shows the answer, the numbered sources it cites, and for each source
 its rank in BM25 and in vector search, so you can see which retriever found it.
 You can switch between hybrid, BM25-only and vector-only, and upload your own
-PDF, Markdown or text files.
+PDF, Markdown or text files: they are indexed as soon as you add them, and the
+"Indexed files" list in the sidebar shows what the search can see.
 
 | Endpoint | What it does |
 |---|---|
 | `GET /health` | Index stats and which embedder and LLM are in use |
 | `POST /ingest` | Index a folder on the server: `{"path": "data/sample", "reset": false}` |
 | `POST /ingest/upload` | Upload `.pdf` `.md` `.txt` files (multipart, field `files`) |
+| `GET /sources` | Every indexed file and how many chunks it has |
 | `POST /search` | `{"query": "...", "k": 5, "mode": "hybrid"}` → ranked chunks |
 | `POST /ask` | Same body → `answer`, `citations` (sources it cited), `sources` (all it was shown) |
 

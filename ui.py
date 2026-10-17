@@ -14,17 +14,59 @@ API_URL = os.getenv("RAG_API_URL", "http://localhost:8000").rstrip("/")
 st.set_page_config(page_title="Ask your docs", page_icon="🔎", layout="wide")
 
 
-def api(method: str, path: str, **kw):
+class APIError(Exception):
+    pass
+
+
+def try_api(method: str, path: str, **kw):
+    """Call the backend; raise APIError with a readable message on failure."""
     try:
-        r = httpx.request(method, f"{API_URL}{path}", timeout=180, **kw)
-    except httpx.ConnectError:
-        st.error(f"Can't reach the API at {API_URL}. Start it with `uvicorn api:app --reload`.")
-        st.stop()
+        r = httpx.request(method, f"{API_URL}{path}", timeout=300, **kw)
+    except httpx.ConnectError as e:
+        raise APIError(f"Can't reach the API at {API_URL}. Start it with `uvicorn api:app --reload`.") from e
+    except httpx.TimeoutException as e:
+        raise APIError("The API took too long to respond. Check the uvicorn terminal for errors.") from e
     if r.status_code >= 400:
-        detail = r.json().get("detail", r.text) if r.headers.get("content-type", "").startswith("application/json") else r.text
-        st.error(f"{r.status_code}: {detail}")
-        st.stop()
+        is_json = r.headers.get("content-type", "").startswith("application/json")
+        detail = r.json().get("detail", r.text) if is_json else r.text
+        raise APIError(f"API error {r.status_code}: {detail}")
     return r.json()
+
+
+def api(method: str, path: str, **kw):
+    """Like try_api, but show the error on the page and stop."""
+    try:
+        return try_api(method, path, **kw)
+    except APIError as e:
+        st.error(str(e))
+        st.stop()
+
+
+def flash(kind: str, msg: str):
+    """Keep a message on screen across reruns, until the next one replaces it."""
+    st.session_state["flash"] = (kind, msg)
+
+
+def index_new_uploads(uploads) -> None:
+    """Index any uploaded file we haven't sent to the API yet (no button needed)."""
+    done: set = st.session_state.setdefault("indexed_uploads", set())
+    new = [f for f in uploads or [] if (f.name, f.size) not in done]
+    if not new:
+        return
+    with st.spinner(f"Indexing {', '.join(f.name for f in new)}..."):
+        try:
+            res = try_api("POST", "/ingest/upload", files=[("files", (f.name, f.getvalue())) for f in new])
+        except APIError as e:
+            flash("error", str(e))
+            return
+    done.update((f.name, f.size) for f in new)
+    msg = f"Indexed {', '.join(res['saved']) or 'nothing'}: {res['added']} new chunks."
+    if res["skipped"]:
+        msg += f" Skipped (unsupported type): {', '.join(map(str, res['skipped']))}."
+    if res["saved"] and res["added"] == 0:
+        msg += " (Already indexed, nothing new.)"
+    flash("success", msg)
+    st.rerun()
 
 
 def retriever_badges(src: dict) -> str:
@@ -51,16 +93,24 @@ with st.sidebar:
     st.caption(f"{health['chunks']} chunks from {health['sources']} files")
     st.caption(f"Embeddings: `{health['embedder']}`  \nLLM: `{health['llm']}`")
 
+    uploads = st.file_uploader(
+        "Add your own files (indexed automatically)",
+        type=["pdf", "md", "txt"],
+        accept_multiple_files=True,
+    )
+    index_new_uploads(uploads)
+
+    if "flash" in st.session_state:
+        kind, msg = st.session_state["flash"]
+        (st.success if kind == "success" else st.error)(msg)
+
+    with st.expander(f"Indexed files ({health['sources']})"):
+        for s in api("GET", "/sources")["sources"]:
+            st.markdown(f"- `{s['source']}` · {s['chunks']} chunks")
+
     if st.button("Index sample docs"):
         res = api("POST", "/ingest", json={"path": "data/sample", "reset": False})
-        st.success(f"Added {res['added']} chunks")
-        st.rerun()
-
-    uploads = st.file_uploader("Add your own files", type=["pdf", "md", "txt"], accept_multiple_files=True)
-    if uploads and st.button("Index uploaded files"):
-        files = [("files", (f.name, f.getvalue())) for f in uploads]
-        res = api("POST", "/ingest/upload", files=files)
-        st.success(f"Added {res['added']} chunks from {len(res['saved'])} files")
+        flash("success", f"Sample docs: {res['added']} new chunks.")
         st.rerun()
 
     st.header("Retrieval")
