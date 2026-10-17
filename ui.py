@@ -82,22 +82,28 @@ def show_source(src: dict, cited: bool):
     loc = src["source"] + (f", p.{src['page']}" if src.get("page") else "")
     title = f"[{src['number']}] {loc}" + ("" if cited else "  (not cited)")
     with st.expander(title, expanded=cited):
-        st.markdown(retriever_badges(src) + f" · RRF score `{src['score']:.4f}`")
+        st.markdown(retriever_badges(src) + f" · match score `{src['score']:.4f}`")
         st.text(src["text"])
 
 
 # ---------- sidebar: index ----------
 with st.sidebar:
     st.header("Index")
+    st.caption("The documents the app can search. Questions are answered only from these files.")
     health = api("GET", "/health")
-    st.caption(f"{health['chunks']} chunks from {health['sources']} files")
+    st.caption(
+        f"**{health['chunks']} chunks from {health['sources']} files.** "
+        "A chunk is a short passage (about a paragraph) that the search can return."
+    )
     st.caption(f"Embeddings: `{health['embedder']}`  \nLLM: `{health['llm']}`")
 
     uploads = st.file_uploader(
-        "Add your own files (indexed automatically)",
+        "Add your own files",
         type=["pdf", "md", "txt"],
         accept_multiple_files=True,
+        help="Files are split into chunks and indexed as soon as you add them.",
     )
+    st.caption("Drop in PDF, Markdown or text files. They're indexed right away, with no button to press.")
     index_new_uploads(uploads)
 
     if "flash" in st.session_state:
@@ -105,23 +111,57 @@ with st.sidebar:
         (st.success if kind == "success" else st.error)(msg)
 
     with st.expander(f"Indexed files ({health['sources']})"):
+        st.caption("Every file the search can see, with how many chunks it was split into.")
         for s in api("GET", "/sources")["sources"]:
             st.markdown(f"- `{s['source']}` · {s['chunks']} chunks")
 
-    if st.button("Index sample docs"):
+    if st.button("Index sample docs", help="Adds the demo files in data/sample. Safe to click twice."):
         res = api("POST", "/ingest", json={"path": "data/sample", "reset": False})
         flash("success", f"Sample docs: {res['added']} new chunks.")
         st.rerun()
+    st.caption("Adds the built-in demo docs (a made-up payments API) so you can try the app.")
 
     st.header("Retrieval")
-    mode = st.radio("Mode", ["hybrid", "bm25", "vector"], horizontal=True)
-    k = st.slider("Sources to use", 1, 10, 5)
+    st.caption("How the app finds the passages it shows to the model.")
+    mode = st.radio(
+        "Search mode",
+        ["hybrid", "bm25", "vector"],
+        horizontal=True,
+        help="hybrid = both searches merged (best default). "
+        "bm25 = exact keyword match. vector = similar meaning.",
+    )
+    st.caption(
+        {
+            "hybrid": "**hybrid**: runs keyword and meaning search, then merges them. Best for most questions.",
+            "bm25": "**bm25**: keyword search. Best for exact words, names and codes like ERR-4012.",
+            "vector": "**vector**: meaning search. Finds passages that say the same thing in other words.",
+        }[mode]
+    )
+    k = st.slider(
+        "Sources to use",
+        1,
+        10,
+        5,
+        help="How many chunks are sent to the model with your question.",
+    )
+    st.caption(
+        "How many passages the model reads before answering. Use more (8–10) for summaries "
+        "or broad questions, fewer for one specific fact."
+    )
 
 # ---------- main: ask ----------
 st.title("🔎 Ask your docs")
 st.caption("Hybrid search (BM25 + vectors, fused with RRF) feeding a local llama3.2 through Ollama.")
 
-question = st.text_input("Question", placeholder="How do I rotate an API key?")
+question = st.text_input(
+    "Question",
+    placeholder="How do I rotate an API key?",
+    help="Specific questions work best: name the thing you're looking for.",
+)
+st.caption(
+    "Ask in plain English about your indexed files. The app finds the best-matching passages, "
+    "then the local model writes an answer from them."
+)
 if st.button("Ask", type="primary") and question.strip():
     with st.spinner("Searching and asking the model..."):
         st.session_state["last"] = api("POST", "/ask", json={"query": question, "k": k, "mode": mode})
@@ -129,6 +169,7 @@ if st.button("Ask", type="primary") and question.strip():
 res = st.session_state.get("last")
 if res:
     st.subheader("Answer")
+    st.caption("Written by the model from the sources below. Numbers like [1] point to the source it used.")
     st.markdown(res["answer"])
     st.caption(f"Model: {res['model']}")
     if "couldn't find" in res["answer"].lower() and res["sources"]:
@@ -140,6 +181,11 @@ if res:
 
     cited = {c["number"] for c in res["citations"]}
     st.subheader("Sources")
+    st.caption(
+        "The passages the model was given, best match first. **Cited** ones are open and were used "
+        "in the answer; **not cited** ones were shown to the model but not used. Inside each: its rank "
+        "in keyword search (BM25) and meaning search (Vector), where – means that search didn't find it."
+    )
     if not res["sources"]:
         st.info("No matching chunks. Try indexing some documents first.")
     for src in res["sources"]:
