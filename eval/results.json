@@ -1,0 +1,364 @@
+{
+  "embedder": "st:sentence-transformers/all-MiniLM-L6-v2",
+  "docs": "data/sample",
+  "files": 18,
+  "chunks": 36,
+  "questions": 32,
+  "count_by_type": {
+    "factual": 6,
+    "keyword": 12,
+    "paraphrase": 14
+  },
+  "summary": {
+    "bm25": {
+      "recall@1": 0.703125,
+      "recall@3": 0.859375,
+      "recall@5": 0.953125,
+      "mrr": 0.8135416666666667,
+      "ms": 0.0352447814293555
+    },
+    "vector": {
+      "recall@1": 0.71875,
+      "recall@3": 0.890625,
+      "recall@5": 0.9375,
+      "mrr": 0.8346354166666666,
+      "ms": 2.966378875044029
+    },
+    "hybrid": {
+      "recall@1": 0.859375,
+      "recall@3": 0.96875,
+      "recall@5": 1.0,
+      "mrr": 0.9177083333333333,
+      "ms": 2.8503931880550226
+    }
+  },
+  "by_type": {
+    "factual": {
+      "bm25": {
+        "recall@1": 0.8333333333333334,
+        "recall@3": 1.0,
+        "recall@5": 1.0,
+        "mrr": 0.9166666666666666,
+        "ms": 0.02793749930181851
+      },
+      "vector": {
+        "recall@1": 0.8333333333333334,
+        "recall@3": 1.0,
+        "recall@5": 1.0,
+        "mrr": 0.8888888888888888,
+        "ms": 2.8255763342410014
+      },
+      "hybrid": {
+        "recall@1": 1.0,
+        "recall@3": 1.0,
+        "recall@5": 1.0,
+        "mrr": 1.0,
+        "ms": 2.8109374979976565
+      }
+    },
+    "keyword": {
+      "bm25": {
+        "recall@1": 0.9583333333333334,
+        "recall@3": 1.0,
+        "recall@5": 1.0,
+        "mrr": 1.0,
+        "ms": 0.023083249592067052
+      },
+      "vector": {
+        "recall@1": 0.625,
+        "recall@3": 0.75,
+        "recall@5": 0.8333333333333334,
+        "mrr": 0.7534722222222222,
+        "ms": 2.9491527493519243
+      },
+      "hybrid": {
+        "recall@1": 0.875,
+        "recall@3": 1.0,
+        "recall@5": 1.0,
+        "mrr": 0.9444444444444445,
+        "ms": 2.8066248341929168
+      }
+    },
+    "paraphrase": {
+      "bm25": {
+        "recall@1": 0.42857142857142855,
+        "recall@3": 0.6785714285714286,
+        "recall@5": 0.8928571428571429,
+        "mrr": 0.6095238095238095,
+        "ms": 0.04880064391597573
+      },
+      "vector": {
+        "recall@1": 0.75,
+        "recall@3": 0.9642857142857143,
+        "recall@5": 1.0,
+        "mrr": 0.880952380952381,
+        "ms": 3.041488071695702
+      },
+      "hybrid": {
+        "recall@1": 0.7857142857142857,
+        "recall@3": 0.9285714285714286,
+        "recall@5": 1.0,
+        "mrr": 0.8595238095238095,
+        "ms": 2.9048185013899848
+      }
+    }
+  },
+  "details": [
+    {
+      "id": "q01",
+      "type": "keyword",
+      "question": "What does ERR-4011 mean?",
+      "bm25": 1,
+      "vector": 1,
+      "hybrid": 1
+    },
+    {
+      "id": "q02",
+      "type": "keyword",
+      "question": "Why would a payout fail with ERR-5031?",
+      "bm25": 1,
+      "vector": 1,
+      "hybrid": 1
+    },
+    {
+      "id": "q03",
+      "type": "keyword",
+      "question": "When do I get ERR-4220?",
+      "bm25": 1,
+      "vector": 6,
+      "hybrid": 1
+    },
+    {
+      "id": "q04",
+      "type": "keyword",
+      "question": "What causes ERR-4031?",
+      "bm25": 1,
+      "vector": 2,
+      "hybrid": 1
+    },
+    {
+      "id": "q05",
+      "type": "keyword",
+      "question": "What is in the Nimbus-Signature header?",
+      "bm25": 1,
+      "vector": 4,
+      "hybrid": 1
+    },
+    {
+      "id": "q06",
+      "type": "keyword",
+      "question": "What does proration_behavior=none do?",
+      "bm25": 1,
+      "vector": 1,
+      "hybrid": 1
+    },
+    {
+      "id": "q07",
+      "type": "keyword",
+      "question": "What is the default max_concurrency?",
+      "bm25": 1,
+      "vector": 1,
+      "hybrid": 1
+    },
+    {
+      "id": "q08",
+      "type": "keyword",
+      "question": "What are nk_rk_ keys?",
+      "bm25": 1,
+      "vector": 1,
+      "hybrid": 1
+    },
+    {
+      "id": "q09",
+      "type": "keyword",
+      "question": "How do I use starting_after?",
+      "bm25": 1,
+      "vector": 1,
+      "hybrid": 1
+    },
+    {
+      "id": "q10",
+      "type": "keyword",
+      "question": "What is application_fee_amount?",
+      "bm25": 1,
+      "vector": 1,
+      "hybrid": 1
+    },
+    {
+      "id": "q11",
+      "type": "keyword",
+      "question": "How do I use the Nimbus-Version header?",
+      "bm25": 1,
+      "vector": 1,
+      "hybrid": 1
+    },
+    {
+      "id": "q12",
+      "type": "keyword",
+      "question": "What happens with card 4000 0000 0000 0002?",
+      "bm25": 1,
+      "vector": 8,
+      "hybrid": 3
+    },
+    {
+      "id": "q13",
+      "type": "paraphrase",
+      "question": "How do I stop someone from faking events sent to my server?",
+      "bm25": 1,
+      "vector": 3,
+      "hybrid": 1
+    },
+    {
+      "id": "q14",
+      "type": "paraphrase",
+      "question": "My customer's bank sent them a replacement card. Will their monthly charge still go through?",
+      "bm25": 4,
+      "vector": 1,
+      "hybrid": 3
+    },
+    {
+      "id": "q15",
+      "type": "paraphrase",
+      "question": "How can I avoid billing a buyer twice if my connection drops mid-request?",
+      "bm25": 1,
+      "vector": 2,
+      "hybrid": 1
+    },
+    {
+      "id": "q16",
+      "type": "paraphrase",
+      "question": "How quickly does money land in my bank account?",
+      "bm25": 3,
+      "vector": 1,
+      "hybrid": 2
+    },
+    {
+      "id": "q17",
+      "type": "paraphrase",
+      "question": "A shopper complained to their bank instead of contacting me. What now?",
+      "bm25": 1,
+      "vector": 1,
+      "hybrid": 1
+    },
+    {
+      "id": "q18",
+      "type": "paraphrase",
+      "question": "Can people try my product for free before they pay?",
+      "bm25": 1,
+      "vector": 1,
+      "hybrid": 1
+    },
+    {
+      "id": "q19",
+      "type": "paraphrase",
+      "question": "Someone asked me to erase all their personal information. What should I do?",
+      "bm25": 1,
+      "vector": 1,
+      "hybrid": 1
+    },
+    {
+      "id": "q20",
+      "type": "paraphrase",
+      "question": "How do I let an outside tool read my sales without giving it full access?",
+      "bm25": 1,
+      "vector": 1,
+      "hybrid": 1
+    },
+    {
+      "id": "q21",
+      "type": "paraphrase",
+      "question": "What happens if I call the API too often?",
+      "bm25": 5,
+      "vector": 1,
+      "hybrid": 1
+    },
+    {
+      "id": "q22",
+      "type": "paraphrase",
+      "question": "Does the payment page work for customers who don't speak English?",
+      "bm25": 4,
+      "vector": 1,
+      "hybrid": 1
+    },
+    {
+      "id": "q23",
+      "type": "paraphrase",
+      "question": "The same notification reached my server twice. How do I handle duplicates?",
+      "bm25": 2,
+      "vector": 1,
+      "hybrid": 1
+    },
+    {
+      "id": "q24",
+      "type": "paraphrase",
+      "question": "Who loses the money if a stolen card got through the bank's extra verification step?",
+      "bm25": 2,
+      "vector": 1,
+      "hybrid": 1
+    },
+    {
+      "id": "q25",
+      "type": "paraphrase",
+      "question": "How do I match deposits in my bank account to individual sales?",
+      "bm25": 2,
+      "vector": 2,
+      "hybrid": 1
+    },
+    {
+      "id": "q26",
+      "type": "paraphrase",
+      "question": "How does my marketplace take a commission on each sale?",
+      "bm25": null,
+      "vector": 1,
+      "hybrid": 5
+    },
+    {
+      "id": "q27",
+      "type": "factual",
+      "question": "How long do I have to capture an authorized payment?",
+      "bm25": 1,
+      "vector": 3,
+      "hybrid": 1
+    },
+    {
+      "id": "q28",
+      "type": "factual",
+      "question": "How many days do I have to submit evidence for a dispute?",
+      "bm25": 1,
+      "vector": 1,
+      "hybrid": 1
+    },
+    {
+      "id": "q29",
+      "type": "factual",
+      "question": "When does a checkout session expire?",
+      "bm25": 2,
+      "vector": 1,
+      "hybrid": 1
+    },
+    {
+      "id": "q30",
+      "type": "factual",
+      "question": "How long can I roll back an API version upgrade?",
+      "bm25": 1,
+      "vector": 1,
+      "hybrid": 1
+    },
+    {
+      "id": "q31",
+      "type": "factual",
+      "question": "What is the rate limit in the sandbox?",
+      "bm25": 1,
+      "vector": 1,
+      "hybrid": 1
+    },
+    {
+      "id": "q32",
+      "type": "factual",
+      "question": "Which fraud score gets a payment blocked?",
+      "bm25": 1,
+      "vector": 1,
+      "hybrid": 1
+    }
+  ]
+}

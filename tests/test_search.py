@@ -37,7 +37,7 @@ def test_exact_error_code(searcher, mode):
 
 
 def test_hybrid_reports_ranks(searcher):
-    res = searcher.search("webhook signature verification", k=3)
+    res = searcher.search("webhook signature", k=3)
     assert res[0].chunk.source == "webhooks.md"
     assert res[0].bm25_rank is not None or res[0].vector_rank is not None
 
