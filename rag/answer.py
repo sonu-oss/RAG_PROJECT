@@ -13,12 +13,23 @@ from .search import HybridSearcher, Mode, SearchResult
 
 NO_ANSWER = "I couldn't find that in the documents."
 
-SYSTEM_PROMPT = f"""You answer questions using ONLY the numbered sources the user provides.
-Rules:
-- Cite every claim with the source number in square brackets, like [1] or [2][3].
-- Only use numbers that appear in the sources list.
-- If the sources don't contain the answer, reply exactly: "{NO_ANSWER}"
-- Be concise: a few sentences or a short list."""
+SYSTEM_PROMPT = """You are a helpful assistant that answers questions about the user's documents.
+You are given numbered excerpts from those documents. Base your answer on them and cite them."""
+
+# The instructions go after the sources, right before the answer, because small
+# local models (like the 3B llama3.2) follow what they read last most reliably.
+INSTRUCTIONS = f"""Instructions:
+- Answer the question using the sources above. Write the answer directly, with no preamble.
+- Cite the sources you use with their numbers in square brackets, like [1] or [2][3].
+- If the question asks for a summary, overview or description, summarize what the sources say.
+- If the sources only partly answer the question, give the part they do answer.
+- Only if none of the sources relate to the question at all, reply with: {NO_ANSWER}"""
+
+RETRY_NUDGE = (
+    "Look at the sources again: they are the best matches the search found for this question. "
+    "Answer from whatever they say that relates to it, citing them. Only if truly nothing "
+    f"relates, reply with: {NO_ANSWER}"
+)
 
 _CITE = re.compile(r"\[(\d+(?:\s*,\s*\d+)*)\]")
 
@@ -65,7 +76,11 @@ def build_prompt(question: str, results: list[SearchResult]) -> str:
     for i, r in enumerate(results, 1):
         loc = r.chunk.source + (f", page {r.chunk.page}" if r.chunk.page else "")
         blocks.append(f"[{i}] ({loc})\n{r.chunk.text}")
-    return "Sources:\n\n" + "\n\n".join(blocks) + f"\n\nQuestion: {question}\nAnswer with citations:"
+    return "Sources:\n\n" + "\n\n".join(blocks) + f"\n\nQuestion: {question}\n\n{INSTRUCTIONS}"
+
+
+def is_refusal(text: str) -> bool:
+    return "couldn't find" in text.lower() or "could not find" in text.lower()
 
 
 def cited_numbers(text: str, n_sources: int) -> list[int]:
@@ -90,8 +105,14 @@ class Answerer:
         if not results:
             return Answer(question, NO_ANSWER, [], [], self.llm.name)
 
-        text = self.llm.chat(SYSTEM_PROMPT, build_prompt(question, results))
+        prompt = build_prompt(question, results)
+        text = self.llm.chat(SYSTEM_PROMPT, prompt)
         used = cited_numbers(text, len(results))
+        if is_refusal(text) and not used:
+            # Small models give up too easily on broad questions ("summarize X").
+            # Retry once with a nudge before accepting the refusal.
+            text = self.llm.chat(SYSTEM_PROMPT, f"{prompt}\n\n{RETRY_NUDGE}")
+            used = cited_numbers(text, len(results))
         return Answer(
             question=question,
             answer=text or NO_ANSWER,

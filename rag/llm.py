@@ -4,6 +4,9 @@ Install Ollama from https://ollama.com, then `ollama pull llama3.2`.
 Settings (environment variables):
 - OLLAMA_URL   default http://localhost:11434
 - OLLAMA_MODEL default llama3.2
+- OLLAMA_NUM_CTX context window in tokens, default 8192. Ollama's own default
+  can be as low as 2048, and it silently cuts the start of a longer prompt
+  (the instructions and first sources).
 """
 
 import os
@@ -34,6 +37,7 @@ class OllamaLLM:
         self.base_url = (base_url or os.getenv("OLLAMA_URL", "http://localhost:11434")).rstrip("/")
         self.temperature = temperature
         self.timeout = timeout
+        self.num_ctx = int(os.getenv("OLLAMA_NUM_CTX", "8192"))
         self.name = f"ollama:{self.model}"
 
     def chat(self, system: str, user: str) -> str:
@@ -44,7 +48,7 @@ class OllamaLLM:
                 {"role": "user", "content": user},
             ],
             "stream": False,
-            "options": {"temperature": self.temperature},
+            "options": {"temperature": self.temperature, "num_ctx": self.num_ctx},
         }
         try:
             r = httpx.post(f"{self.base_url}/api/chat", json=payload, timeout=self.timeout)

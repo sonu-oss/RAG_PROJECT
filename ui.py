@@ -131,6 +131,12 @@ if res:
     st.subheader("Answer")
     st.markdown(res["answer"])
     st.caption(f"Model: {res['model']}")
+    if "couldn't find" in res["answer"].lower() and res["sources"]:
+        st.info(
+            "Tip: open the sources below to check what the search found. Questions that name "
+            "specific things in your file work best. For summaries, raise **Sources to use** "
+            "in the sidebar so the model sees more of the document."
+        )
 
     cited = {c["number"] for c in res["citations"]}
     st.subheader("Sources")

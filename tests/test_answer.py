@@ -45,7 +45,9 @@ def test_prompt_numbers_sources(searcher):
     prompt = build_prompt("How?", results)
     for i, r in enumerate(results, 1):
         assert f"[{i}] ({r.chunk.source}" in prompt
-    assert prompt.rstrip().endswith("Answer with citations:")
+    # instructions come last, after the sources and the question
+    assert prompt.index("Question: How?") < prompt.index("Instructions:")
+    assert "summarize what the sources say" in prompt
 
 
 def test_ask_maps_citations_to_chunks(searcher):
@@ -68,6 +70,35 @@ def test_ask_with_empty_index_skips_llm(tmp_path):
     assert ans.answer == NO_ANSWER and not ans.citations and not llm.calls
 
 
+class ScriptedLLM(FakeLLM):
+    def __init__(self, replies):
+        super().__init__()
+        self.replies = list(replies)
+
+    def chat(self, system, user):
+        self.calls.append((system, user))
+        return self.replies.pop(0)
+
+
+def test_refusal_with_sources_is_retried_once(searcher):
+    llm = ScriptedLLM([NO_ANSWER, "Refunds take 5-10 business days [1]."])
+    ans = Answerer(searcher, llm).ask("summarize the refund policy", k=3)
+    assert len(llm.calls) == 2 and "Look at the sources again" in llm.calls[1][1]
+    assert ans.answer.startswith("Refunds") and [c.number for c in ans.citations] == [1]
+
+
+def test_second_refusal_is_kept(searcher):
+    llm = ScriptedLLM([NO_ANSWER, NO_ANSWER])
+    ans = Answerer(searcher, llm).ask("what is the capital of France?", k=3)
+    assert len(llm.calls) == 2 and ans.answer == NO_ANSWER and not ans.citations
+
+
+def test_cited_answer_is_not_retried(searcher):
+    llm = ScriptedLLM(["Keys rotate in the dashboard [1]."])
+    Answerer(searcher, llm).ask("how do I rotate an API key?", k=3)
+    assert len(llm.calls) == 1
+
+
 # ---------- Ollama client (HTTP mocked) ----------
 def test_ollama_parses_reply(monkeypatch):
     seen = {}
@@ -81,6 +112,7 @@ def test_ollama_parses_reply(monkeypatch):
     assert out == "Hi [1]"
     assert seen["url"] == "http://ollama:11434/api/chat"
     assert seen["body"]["model"] == "llama3.2" and seen["body"]["stream"] is False
+    assert seen["body"]["options"]["num_ctx"] >= 8192  # Ollama's small default cuts long prompts
 
 
 def test_ollama_down_gives_helpful_error(monkeypatch):
