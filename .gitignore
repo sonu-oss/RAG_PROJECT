@@ -1,0 +1,32 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+build/
+dist/
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Secrets
+.env
+
+# Search index (Chroma data + chunks.json)
+.index/
+chroma/
+*.sqlite3
+
+# Model caches
+.cache/
+models/
+.huggingface/
+
+# OS / editors
+.DS_Store
+.vscode/
+.idea/

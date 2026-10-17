@@ -1,0 +1,17 @@
+Nimbus Pay FAQ
+
+Which currencies are supported?
+Nimbus Pay supports 38 currencies. Payouts are made in your account's settlement
+currency; other currencies are converted at the daily mid-market rate plus 1%.
+
+How long do payouts take?
+Payouts reach your bank account on a rolling 2 business day schedule. New
+accounts have a 7 day holding period for their first payout.
+
+Can I test without moving real money?
+Yes. Use a test key in the sandbox. The card number 4242 4242 4242 4242 always
+succeeds and 4000 0000 0000 0002 is always declined.
+
+Is my customers' card data stored on my servers?
+No. Card details go straight from the browser to Nimbus Pay through the hosted
+checkout form, so you stay in the lightest PCI compliance scope (SAQ A).
