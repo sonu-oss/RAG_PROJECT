@@ -5,6 +5,7 @@
     python cli.py search "ERR-4012" --mode bm25 -k 3
     python cli.py compare "what happens if a payment fails"
     python cli.py ask "how long do refunds take?"      # needs Ollama running
+    python cli.py eval                                 # recall@k and MRR for each mode
 """
 
 import argparse
@@ -52,7 +53,14 @@ def main():
 
     sub.add_parser("stats", help="show index stats")
 
+    pe = sub.add_parser("eval", help="score bm25, vector and hybrid on a labeled question set")
+    pe.add_argument("--questions", default="eval/questions.jsonl")
+    pe.add_argument("--docs", default="data/sample")
+    pe.add_argument("--out", default="eval", help="folder for results.md and results.json")
+
     args = p.parse_args()
+    if args.cmd == "eval":
+        return run_eval(args)
     hs = HybridSearcher()
 
     if args.cmd == "ingest":
@@ -83,6 +91,32 @@ def main():
             print(f"[{c.number}] {loc}  [bm25 #{r.bm25_rank or '-'} | vector #{r.vector_rank or '-'}]")
     elif args.cmd == "stats":
         print(json.dumps(hs.stats(), indent=2))
+
+
+def run_eval(args):
+    """Builds its own temporary index, so the one in .index/ is left alone."""
+    import os
+    from pathlib import Path
+
+    from rag.embeddings import get_embedder
+    from rag.evaluate import run, to_markdown
+
+    embedder = get_embedder()
+    wanted = (os.getenv("RAG_EMBEDDINGS") or "minilm").lower()
+    if embedder.name.startswith("local:hashing") and wanted != "hashing":
+        sys.exit(
+            "Error: the MiniLM model didn't load, so these numbers would come from the "
+            "hashing test embedder. Fix the model download (see the warning above), or run "
+            "with RAG_EMBEDDINGS=hashing if you really want hashing numbers."
+        )
+    res = run(args.questions, args.docs, embedder)
+    md = to_markdown(res)
+    out = Path(args.out)
+    out.mkdir(parents=True, exist_ok=True)
+    (out / "results.md").write_text(md)
+    (out / "results.json").write_text(json.dumps(res, indent=2) + "\n")
+    print(md.split("## By question type")[0].strip())
+    print(f"\nFull results: {out / 'results.md'}")
 
 
 if __name__ == "__main__":

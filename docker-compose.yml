@@ -1,0 +1,69 @@
+# docker compose up --build
+#   UI   http://localhost:8501
+#   API  http://localhost:8000/docs
+# Uses Ollama inside Docker by default. On a Mac, Docker can't use the GPU, so
+# answers are faster with the Ollama app instead; see "Run with Docker" in README.md.
+services:
+  ollama:
+    image: ollama/ollama:latest
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama:/root/.ollama
+    healthcheck:
+      test: ["CMD", "ollama", "list"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  # Downloads the model once (about 2 GB) into the ollama volume, then exits.
+  ollama-pull:
+    image: ollama/ollama:latest
+    depends_on:
+      ollama:
+        condition: service_healthy
+    environment:
+      - OLLAMA_HOST=http://ollama:11434
+    entrypoint: ["ollama", "pull", "${OLLAMA_MODEL:-llama3.2}"]
+    restart: "no"
+
+  api:
+    build: .
+    # Index the sample docs on start (re-running adds nothing), then serve.
+    command: sh -c "python cli.py ingest data/sample && uvicorn api:app --host 0.0.0.0 --port 8000"
+    ports:
+      - "8000:8000"
+    environment:
+      - OLLAMA_URL=${OLLAMA_URL:-http://ollama:11434}
+      - OLLAMA_MODEL=${OLLAMA_MODEL:-llama3.2}
+      - RAG_EMBEDDINGS=${RAG_EMBEDDINGS:-minilm}
+      - RAG_INDEX_DIR=/data/index
+    volumes:
+      - index:/data/index
+      - hf-cache:/cache/huggingface   # MiniLM downloads here once
+      - uploads:/app/data/uploads
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import httpx; httpx.get('http://localhost:8000/health').raise_for_status()"]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+      start_period: 30s
+
+  ui:
+    build: .
+    command: streamlit run ui.py --server.address 0.0.0.0 --server.port 8501
+    ports:
+      - "8501:8501"
+    environment:
+      - RAG_API_URL=http://api:8000
+    depends_on:
+      api:
+        condition: service_healthy
+
+volumes:
+  ollama:
+  index:
+  hf-cache:
+  uploads:

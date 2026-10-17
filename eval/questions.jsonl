@@ -1,0 +1,32 @@
+{"id": "q01", "type": "keyword", "question": "What does ERR-4011 mean?", "relevant": [{"source": "authentication.md", "contains": "ERR-4011"}]}
+{"id": "q02", "type": "keyword", "question": "Why would a payout fail with ERR-5031?", "relevant": [{"source": "payouts.md", "contains": "ERR-5031"}]}
+{"id": "q03", "type": "keyword", "question": "When do I get ERR-4220?", "relevant": [{"source": "refunds.md", "contains": "ERR-4220"}]}
+{"id": "q04", "type": "keyword", "question": "What causes ERR-4031?", "relevant": [{"source": "security.md", "contains": "ERR-4031"}]}
+{"id": "q05", "type": "keyword", "question": "What is in the Nimbus-Signature header?", "relevant": [{"source": "webhooks.md", "contains": "Nimbus-Signature"}]}
+{"id": "q06", "type": "keyword", "question": "What does proration_behavior=none do?", "relevant": [{"source": "subscriptions.md", "contains": "proration_behavior=none"}]}
+{"id": "q07", "type": "keyword", "question": "What is the default max_concurrency?", "relevant": [{"source": "sdks.md", "contains": "max_concurrency"}, {"source": "rate-limits.md", "contains": "max_concurrency"}]}
+{"id": "q08", "type": "keyword", "question": "What are nk_rk_ keys?", "relevant": [{"source": "security.md", "contains": "nk_rk_"}]}
+{"id": "q09", "type": "keyword", "question": "How do I use starting_after?", "relevant": [{"source": "pagination.md", "contains": "starting_after"}]}
+{"id": "q10", "type": "keyword", "question": "What is application_fee_amount?", "relevant": [{"source": "platforms.md", "contains": "application_fee_amount"}]}
+{"id": "q11", "type": "keyword", "question": "How do I use the Nimbus-Version header?", "relevant": [{"source": "versioning.md", "contains": "Nimbus-Version"}]}
+{"id": "q12", "type": "keyword", "question": "What happens with card 4000 0000 0000 0002?", "relevant": [{"source": "faq.txt", "contains": "4000 0000 0000 0002"}]}
+{"id": "q13", "type": "paraphrase", "question": "How do I stop someone from faking events sent to my server?", "relevant": [{"source": "webhooks.md", "contains": "HMAC-SHA256"}]}
+{"id": "q14", "type": "paraphrase", "question": "My customer's bank sent them a replacement card. Will their monthly charge still go through?", "relevant": [{"source": "customers.md", "contains": "card updater"}]}
+{"id": "q15", "type": "paraphrase", "question": "How can I avoid billing a buyer twice if my connection drops mid-request?", "relevant": [{"source": "payments.md", "contains": "Idempotency-Key"}]}
+{"id": "q16", "type": "paraphrase", "question": "How quickly does money land in my bank account?", "relevant": [{"source": "faq.txt", "contains": "rolling 2 business day"}, {"source": "payouts.md", "contains": "settlement delay"}]}
+{"id": "q17", "type": "paraphrase", "question": "A shopper complained to their bank instead of contacting me. What now?", "relevant": [{"source": "refunds.md", "contains": "chargeback"}]}
+{"id": "q18", "type": "paraphrase", "question": "Can people try my product for free before they pay?", "relevant": [{"source": "subscriptions.md", "contains": "trial_period_days"}]}
+{"id": "q19", "type": "paraphrase", "question": "Someone asked me to erase all their personal information. What should I do?", "relevant": [{"source": "customers.md", "contains": "GDPR"}]}
+{"id": "q20", "type": "paraphrase", "question": "How do I let an outside tool read my sales without giving it full access?", "relevant": [{"source": "security.md", "contains": "restricted key"}]}
+{"id": "q21", "type": "paraphrase", "question": "What happens if I call the API too often?", "relevant": [{"source": "rate-limits.md", "contains": "HTTP 429"}]}
+{"id": "q22", "type": "paraphrase", "question": "Does the payment page work for customers who don't speak English?", "relevant": [{"source": "checkout.md", "contains": "30 languages"}]}
+{"id": "q23", "type": "paraphrase", "question": "The same notification reached my server twice. How do I handle duplicates?", "relevant": [{"source": "webhooks.md", "contains": "already processed"}]}
+{"id": "q24", "type": "paraphrase", "question": "Who loses the money if a stolen card got through the bank's extra verification step?", "relevant": [{"source": "fraud.md", "contains": "liability"}]}
+{"id": "q25", "type": "paraphrase", "question": "How do I match deposits in my bank account to individual sales?", "relevant": [{"source": "reporting.md", "contains": "reconciliation report"}]}
+{"id": "q26", "type": "paraphrase", "question": "How does my marketplace take a commission on each sale?", "relevant": [{"source": "platforms.md", "contains": "application_fee_amount"}]}
+{"id": "q27", "type": "factual", "question": "How long do I have to capture an authorized payment?", "relevant": [{"source": "payments.md", "contains": "within 7 days of authorization"}]}
+{"id": "q28", "type": "factual", "question": "How many days do I have to submit evidence for a dispute?", "relevant": [{"source": "refunds.md", "contains": "7 days to upload evidence"}]}
+{"id": "q29", "type": "factual", "question": "When does a checkout session expire?", "relevant": [{"source": "checkout.md", "contains": "expires after 24 hours"}]}
+{"id": "q30", "type": "factual", "question": "How long can I roll back an API version upgrade?", "relevant": [{"source": "versioning.md", "contains": "72 hours"}]}
+{"id": "q31", "type": "factual", "question": "What is the rate limit in the sandbox?", "relevant": [{"source": "rate-limits.md", "contains": "25 in the sandbox"}]}
+{"id": "q32", "type": "factual", "question": "Which fraud score gets a payment blocked?", "relevant": [{"source": "fraud.md", "contains": "75 or above"}]}
